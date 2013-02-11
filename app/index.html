@@ -12,36 +12,7 @@
 
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-        <style>
-            .land {
-
-              fill: none;
-              stroke-width: 1px;
-              stroke: red;
-            }
-
-            .fortress {
-                fill: #ccc;
-                cursor: pointer;
-                stroke: red;
-                stroke-width: 2.5px;
-              stroke-linejoin: round;
-              }
-
-            .fortress :hover {
-                fill: red;
-                cursor: pointer;
-              }
-
-            .fortress .active {
-              fill: orange;
-            }
-
-            .fortress-boundaries {
-              fill: none;
-              }
-
-        </style>
+        <style></style>
         <link rel="stylesheet" href="styles/main.css"></link>
         <script src="http://d3js.org/d3.v3.min.js"></script>
         <script src="http://d3js.org/queue.v1.min.js"></script>
@@ -75,9 +46,8 @@
     <!-- endbuild -->
 
     <script>
-      var width = 1280,
-          height = 800,
-          active;
+      var width = 960,
+          height = 500;
 
       var projection = d3.geo.albersUsa();
 
@@ -88,60 +58,44 @@
           .attr("width", width)
           .attr("height", height);
 
-      svg.append("rect")
-          .attr("width", width)
-          .attr("height", height)
-          .on("click", reset);
+      queue()
+          .defer(d3.json, "us.json")
+          .defer(d3.json, "us-congress-113.json")
+          .await(ready);
 
-      var g = svg.append("g");
-
-
-      d3.json("us.json", function(error, us) {
-        svg.append("path")
+      function ready(error, us, congress) {
+        svg.append("defs").append("path")
+            .attr("id", "land")
             .datum(topojson.object(us, us.objects.land))
-            .attr("class", "land")
             .attr("d", path);
-          })
 
-      d3.json("dod_sites.json", function(error, army) {
-        g.selectAll("path")
-            .data(topojson.object(army, army.objects.fortress).geometries)
+        svg.append("clipPath")
+            .attr("id", "clip-land")
+          .append("use")
+            .attr("xlink:href", "#land");
+
+        svg.append("g")
+            .attr("class", "districts")
+            .attr("clip-path", "url(#clip-land)")
+          .selectAll("path")
+            .data(topojson.object(congress, congress.objects.districts).geometries)
           .enter().append("path")
             .attr("d", path)
-            .attr("class", "fortress")
-            .on("click", click);
+          .append("title")
+            .text(function(d) { return d.id; });
 
+        svg.append("path")
+            .attr("class", "district-boundaries")
+            .attr("clip-path", "url(#clip-land)")
+            .datum(topojson.mesh(congress, congress.objects.districts, function(a, b) { return (a.id / 1000 | 0) === (b.id / 1000 | 0); }))
+            .attr("d", path);
 
-          g.selectAll(".place-label")
-              .data(topojson.object(army, army.objects.fortress).geometries)
-              .enter()
-              .append("text")
-              .attr("class", "place-label")
-              .attr("transform", function(d) { return "translate(" + (dx, dy) + ")"; })
-              .attr("dy", ".35em")
-              .text(function(d) { return d.id; });
-
-          });
-
-      function click(d) {
-
-        if (active === d) return reset();
-
-        g.selectAll(".active").classed("active", false);
-        d3.select(this).classed("active", active = d);
-
-        var b = path.bounds(d);
-        g.transition().duration(750).attr("transform",
-            "translate(" + projection.translate() + ")"
-            + "scale(" + .35 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
-            + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
+        svg.append("path")
+            .attr("class", "state-boundaries")
+            .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+            .attr("d", path);
       }
-
-      function reset() {
-        g.selectAll(".active").classed("active", active = false);
-        g.transition().duration(750).attr("transform", "");
-      }
-  </script>
+    </script>
 
 </body>
 </html>

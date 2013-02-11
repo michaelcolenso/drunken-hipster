@@ -1,32 +1,27 @@
 @import "compass_twitter_bootstrap";
 
-rect {
-  fill: none;
-  pointer-events: all;
+path {
+  stroke-linejoin: round;
 }
 
-/*.fortress {*/
-  /*fill: none;*/
-/*}*/
-/*.fortress :before {*/
+.districts {
+  fill: #bbb;
+}
 
-/*}*/
+.districts :hover {
+  fill: orange;
+}
 
-/*.fortress :hover {*/
-  /*fill: orange;*/
-  /*stroke: black;*/
-/*}*/
+.district-boundaries {
+  pointer-events: none;
+  fill: none;
+  stroke: #ddd;
+}
 
-/*.fortress-boundaries {*/
-  /*pointer-events: none;*/
-  /*fill: none;*/
-  /*stroke: #222;*/
-/*}*/
-
-/*.state-boundaries {*/
-  /*pointer-events: none;*/
-  /*fill: none;*/
-  /*[>stroke: black;<]*/
-  /*stroke-width: 1.5px;*/
-/*}*/
+.state-boundaries {
+  pointer-events: none;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
 
