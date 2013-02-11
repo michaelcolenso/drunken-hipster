@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+        
+        <link rel="stylesheet" href="styles/main.css">
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+        <script src="http://d3js.org/queue.v1.min.js"></script>
+        <script src="http://d3js.org/topojson.v0.min.js"></script>
+        <script src="scripts/vendor/modernizr.min.js"></script>
+    </head>
+    <body>
+
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="scripts/vendor/jquery.min.js"><\/script>')</script>
+        
+        
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <!--<script>-->
+            <!--var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];-->
+            <!--(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];-->
+            <!--g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';-->
+            <!--s.parentNode.insertBefore(g,s)}(document,'script'));-->
+        <!--</script>-->
+    
+    <!-- build:js scripts/amd-app.js -->
+    <script data-main="scripts/main" src="scripts/vendor/require.js"></script>
+    <!-- endbuild -->
+
+    <script>
+      var width = 1280,
+          height = 960;
+
+      var path = d3.geo.path();
+
+      var svg = d3.select("body").append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+      queue()
+          .defer(d3.json, "us.json")
+          .defer(d3.json, "army.json")
+          .await(ready);
+
+      function ready(error, us, army) {
+        svg.append("defs").append("path")
+            .attr("id", "land")
+            .datum(topojson.object(us, us.objects.land))
+            .attr("d", path);
+
+        <!--svg.append("clipPath")-->
+            <!--.attr("id", "clip-land")-->
+          <!--.append("use")-->
+            <!--.attr("xlink:href", "#land");-->
+
+        svg.append("g")
+            .attr("class", "fortress")
+            .attr("clip-path", "url(#clip-land)")
+          .selectAll("path")
+            .data(topojson.object(army, army.objects.fortress).geometries)
+          .enter().append("path")
+            .attr("d", path)
+          .append("title")
+            .text(function(d) { return d.id; });
+
+        svg.append("path")
+            .attr("class", "fortress-boundaries")
+            .attr("clip-path", "url(#clip-land)")
+            .datum(topojson.mesh(army, army.objects.fortress, function(a, b) { return (a.id / 1000 | 0) === (b.id / 1000 | 0); }))
+            .attr("d", path);
+
+        <!--svg.append("path")-->
+            <!--.attr("class", "state-boundaries")-->
+            <!--.datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))-->
+            <!--.attr("d", path);-->
+      }
+    </script>
+
+</body>
+</html>

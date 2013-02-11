@@ -1,0 +1,7 @@
+ogr2ogr -f GeoJSON -where "adm1_a3 IN ('USA')" states.json ne_10m_admin_1_states_provinces_shp.shp 
+
+ogr2ogr -f GeoJSON -where "iso_a2 = 'USB' AND SCALERANK <= 2" states.json ne_10m_admin_1_states_provinces_shp.shp
+ogr2ogr -f GeoJSON -where "iso_a2 = 'USB'" states.json ne_10m_populated_places.shp
+
+topojson --id-property su_a3 -p NAME=name -p name -o usa.json us.json states.json
+

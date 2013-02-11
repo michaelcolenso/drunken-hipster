@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+        <style>
+            .land {
+
+              fill: none;
+              stroke-width: 1px;
+              stroke: red;
+            }
+
+            .fortress {
+                fill: #ccc;
+                cursor: pointer;
+                stroke: red;
+                stroke-width: 2.5px;
+              stroke-linejoin: round;
+              }
+
+            .fortress :hover {
+                fill: red;
+                cursor: pointer;
+              }
+
+            .fortress .active {
+              fill: orange;
+            }
+
+            .fortress-boundaries {
+              fill: none;
+              }
+
+        </style>
+        <link rel="stylesheet" href="styles/main.css"></link>
+        <script src="http://d3js.org/d3.v3.min.js"></script>
+        <script src="http://d3js.org/queue.v1.min.js"></script>
+        <script src="https://raw.github.com/d3/d3-plugins/master/geo/tile/tile.js"></script>
+        <script src="http://d3js.org/topojson.v0.min.js"></script>
+        <script src="scripts/vendor/modernizr.min.js"></script>
+    </head>
+    <body>
+
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="scripts/vendor/jquery.min.js"><\/script>')</script>
+        
+        
+
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <!--<script>-->
+            <!--var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];-->
+            <!--(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];-->
+            <!--g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';-->
+            <!--s.parentNode.insertBefore(g,s)}(document,'script'));-->
+        <!--</script>-->
+    
+    <!-- build:js scripts/amd-app.js -->
+    <script data-main="scripts/main" src="scripts/vendor/require.js"></script>
+    <!-- endbuild -->
+
+    <script>
+      var width = 1280,
+          height = 800,
+          active;
+
+      var projection = d3.geo.albersUsa();
+
+      var path = d3.geo.path()
+          .projection(projection);
+
+      var svg = d3.select("body").append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+      svg.append("rect")
+          .attr("width", width)
+          .attr("height", height)
+          .on("click", reset);
+
+      var g = svg.append("g");
+
+
+      d3.json("us.json", function(error, us) {
+        svg.append("path")
+            .datum(topojson.object(us, us.objects.land))
+            .attr("class", "land")
+            .attr("d", path);
+          })
+
+      d3.json("dod_sites.json", function(error, army) {
+        g.selectAll("path")
+            .data(topojson.object(army, army.objects.fortress).geometries)
+          .enter().append("path")
+            .attr("d", path)
+            .attr("class", "fortress")
+            .on("click", click);
+
+        g.append("path")
+            .datum(topojson.mesh(army, army.objects.fortress, function(a, b) { return a !== b; }))
+            .attr("class", "fortress-boundaries")
+            .attr("d", path)
+          .append("svg:text")
+            .attr("x", 10)
+            .attr("dy", ".31em")
+            .text(function(d) { return d.id; });
+
+          });
+
+      function click(d) {
+
+        if (active === d) return reset();
+
+        g.selectAll(".active").classed("active", false);
+        d3.select(this).classed("active", active = d);
+
+        var b = path.bounds(d);
+        g.transition().duration(750).attr("transform",
+            "translate(" + projection.translate() + ")"
+            + "scale(" + .35 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
+            + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
+      }
+
+      function reset() {
+        g.selectAll(".active").classed("active", active = false);
+        g.transition().duration(750).attr("transform", "");
+      }
+  </script>
+
+</body>
+</html>
