@@ -25,14 +25,17 @@
         <script src="scripts/vendor/modernizr.min.js"></script>
     </head>
     <body>
+      <div id="title" class="span12">
+       
+        <div class="span4">
+          <div class="base-list"></div>
+        </div>
 
-      <div class="span4">
-        <div class="base-list"></div>
+        <div id="map" class="span8">
+          <div class="page-header"><h1>Military Installations, Ranges, and Training Areas in the US</h1></div>
+        </div>
+
       </div>
-
-      <div id="map" class="span8">
-      </div>
-
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
         <![endif]-->
@@ -100,7 +103,7 @@
 
         baselist.selectAll("div")
           .data(topojson.object(army, army.objects.fortress).geometries)
-          .enter().append("h2").text(function(d){ return d.id })
+          .enter().append("h4").text(function(d){ return d.id })
           .html( function(d){ return d.id; })
           .on("click", click)
 

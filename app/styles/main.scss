@@ -8,6 +8,7 @@ rect {
 path {
   fill:none;
   stroke: black;
+  stroke-linejoin: round;
 }
 
 #map {
@@ -19,4 +20,11 @@ path {
 .active {
   stroke: blue;
   fill: green;
+}
+.mesh {
+  stroke-linejoin: round;
+}
+
+.page-header {
+  margin: -20px 0 0 30px;
 }
