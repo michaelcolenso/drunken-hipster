@@ -13,43 +13,25 @@
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
         <style>
-            .land {
 
-              fill: none;
-              stroke-width: 1px;
-              stroke: red;
-            }
 
-            .fortress {
-                fill: #ccc;
-                cursor: pointer;
-                stroke: red;
-                stroke-width: 2.5px;
-              stroke-linejoin: round;
-              }
 
-            .fortress :hover {
-                fill: red;
-                cursor: pointer;
-              }
-
-            .fortress .active {
-              fill: orange;
-            }
-
-            .fortress-boundaries {
-              fill: none;
-              }
 
         </style>
         <link rel="stylesheet" href="styles/main.css"></link>
         <script src="http://d3js.org/d3.v3.min.js"></script>
         <script src="http://d3js.org/queue.v1.min.js"></script>
-        <script src="https://raw.github.com/d3/d3-plugins/master/geo/tile/tile.js"></script>
         <script src="http://d3js.org/topojson.v0.min.js"></script>
         <script src="scripts/vendor/modernizr.min.js"></script>
     </head>
     <body>
+
+      <div class="span4">
+        <div class="base-list"></div>
+      </div>
+
+      <div id="map" class="span8">
+      </div>
 
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
@@ -61,6 +43,8 @@
         <script>window.jQuery || document.write('<script src="scripts/vendor/jquery.min.js"><\/script>')</script>
         
         
+
+        <script src="scripts/vendor/chosen.jquery.min.js"></script>
 
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <!--<script>-->
@@ -75,8 +59,8 @@
     <!-- endbuild -->
 
     <script>
-      var width = 1280,
-          height = 800,
+      var width = 960,
+          height = 500,
           active;
 
       var projection = d3.geo.albersUsa();
@@ -84,7 +68,7 @@
       var path = d3.geo.path()
           .projection(projection);
 
-      var svg = d3.select("body").append("svg")
+      var svg = d3.select("#map").append("svg")
           .attr("width", width)
           .attr("height", height);
 
@@ -103,25 +87,42 @@
             .attr("d", path);
           })
 
-      d3.json("dod_sites.json", function(error, army) {
-        g.selectAll("path")
-            .data(topojson.object(army, army.objects.fortress).geometries)
-          .enter().append("path")
-            .attr("d", path)
-            .attr("class", "fortress")
-            .on("click", click);
-
-
-          g.selectAll(".place-label")
+      var base = d3.json("dod_sites.json", function(error, army) {
+          g.selectAll("path")
               .data(topojson.object(army, army.objects.fortress).geometries)
-              .enter()
-              .append("text")
-              .attr("class", "place-label")
-              .attr("transform", function(d) { return "translate(" + (dx, dy) + ")"; })
-              .attr("dy", ".35em")
-              .text(function(d) { return d.id; });
+            .enter().append("path")
+              .attr("d", path)
+              .attr("class", "fortress")
+              .attr("id", function (d){ return d.id; })
+              .append("text", function(d){ return d.id });
+
+      var baselist = d3.select(".base-list");
+
+        baselist.selectAll("div")
+          .data(topojson.object(army, army.objects.fortress).geometries)
+          .enter().append("h2").text(function(d){ return d.id })
+          .html( function(d){ return d.id; })
+          .on("click", click)
 
           });
+
+
+        function hover(d) {
+
+          <!--if (active === d) return reset();-->
+
+          var center = path.centroid(d);
+          g.transition().duration(250)
+          .attr("transform", function(d) {
+
+              var centroid = path.centroid(d),
+                x = centroid[0],
+                y = centroid[1];
+                return "translate(" + x + "," + y + ")"
+                + "scale(" +  2  + ")"
+                + "translate(" + -x + "," + -y + ")";
+              })
+          }
 
       function click(d) {
 
@@ -133,7 +134,7 @@
         var b = path.bounds(d);
         g.transition().duration(750).attr("transform",
             "translate(" + projection.translate() + ")"
-            + "scale(" + .35 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
+            + "scale(" + .1 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height) + ")"
             + "translate(" + -(b[1][0] + b[0][0]) / 2 + "," + -(b[1][1] + b[0][1]) / 2 + ")");
       }
 
@@ -141,7 +142,7 @@
         g.selectAll(".active").classed("active", active = false);
         g.transition().duration(750).attr("transform", "");
       }
-  </script>
 
+  </script>
 </body>
 </html>
